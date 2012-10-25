@@ -24,16 +24,16 @@ import android.widget.*;
  * TODO: use a secondary thread to control playback status like https://gist.github.com/916157
  * but using getCurrentPosition()
  *
- * FIXME: maybe saving in mContext the calling instance cause a memory leak.
  */
 public class RadioService  extends Service implements MediaPlayer.OnPreparedListener {
 	private static final String TAG = "RadioService";
 	private static String URL = "http://stream.radioblackout.org/blackout-low.mp3";
 	private static final String ACTION_PLAY = "com.example.action.PLAY";
-	private static Context mContext;
 
 	private static final String ACTION_STOP = "com.example.action.STOP";
 	private static final String ACTION_STATUS = "com.example.action.STATUS";
+
+    public static final String STATUS_CHANGE = "org.radioblackout.android.STATUS_CHANGE";
 
     public static final int RB_STREAM_STATUS_STOPPED = 0;
     public static final int RB_STREAM_STATUS_LOADING = 1;
@@ -55,6 +55,12 @@ public class RadioService  extends Service implements MediaPlayer.OnPreparedList
 	public IBinder onBind(Intent intent) {
 		return null;
 	}
+
+    private void announceStatusChange() {
+        Intent i = new Intent(STATUS_CHANGE);
+
+        sendBroadcast(i);
+    }
 
 	private void initMediaPlayer() {
 		if (mMediaPlayer == null)
@@ -136,8 +142,6 @@ public class RadioService  extends Service implements MediaPlayer.OnPreparedList
 		// FIXME: if is asked during buffering?
 		if (action.equals(ACTION_PLAY) && (mMediaPlayer == null || !mMediaPlayer.isPlaying())) {
             RB_STREAM_STATUS = RB_STREAM_STATUS_LOADING;
-			// FIXME: create an interface
-			((RadioActivity)mContext).displayBuffering();
 			initMediaPlayer();
 		} else if(action.equals(ACTION_STOP)) {
             RB_STREAM_STATUS = RB_STREAM_STATUS_STOPPED;
@@ -147,7 +151,7 @@ public class RadioService  extends Service implements MediaPlayer.OnPreparedList
 
 			// remove the notification
 			stopForeground(true);
-			((RadioActivity)mContext).displayStoppedBuffering();
+            announceStatusChange();
         }
 
 		return START_NOT_STICKY;
@@ -157,8 +161,8 @@ public class RadioService  extends Service implements MediaPlayer.OnPreparedList
 	public void onPrepared(MediaPlayer player) {
 		player.start();
         RB_STREAM_STATUS = RB_STREAM_STATUS_STARTED;
+        announceStatusChange();
 		createNotificationStatus();
-		((RadioActivity)mContext).displayRemoveBuffering();
 	}
 
 	@Override
@@ -171,7 +175,6 @@ public class RadioService  extends Service implements MediaPlayer.OnPreparedList
 	 * This method is called when we want to start this service
 	 */
 	static public void start(Context caller) {
-		mContext = caller;
 		Intent i = new Intent(caller, RadioService.class);
 
 		i.setAction(ACTION_PLAY);

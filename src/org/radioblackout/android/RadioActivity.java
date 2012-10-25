@@ -37,9 +37,22 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 	private static final String TAG = "RadioActivity";
 	private static String URL = "http://stream.radioblackout.org/blackout-low.mp3";
 
+    /*
+     * This class listen for change in the status of the RadioService and update
+     * accordingly the interface.
+     */
+    public class RadioServiceReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            adaptMenuButtonToState();
+        }
+    }
+
     private Menu mMenu = null;
 
 	static MediaPlayer MP = null;
+
+    private RadioServiceReceiver mRadioServiceReceiver;
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -187,8 +200,23 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 			// could not get audio focus.
 			android.util.Log.i("TAG", "no focus baby");
 		}*/
+    @Override
+    public void onResume() {
+        IntentFilter radioServiceStatusIntentFilter =
+            new IntentFilter(RadioService.STATUS_CHANGE);
 
-		t.start();
+        mRadioServiceReceiver = new RadioServiceReceiver();
+
+        registerReceiver(mRadioServiceReceiver, radioServiceStatusIntentFilter);
+
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        unregisterReceiver(mRadioServiceReceiver);
+    }
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -212,7 +240,6 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 				break;
 		}
         adaptMenuButtonToState();
-
 	}
 
 	private void setBannerMessage(String msg) {
@@ -220,12 +247,6 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 	}
 
 	public void displayBuffering() {
-		((TextView)findViewById(R.id.banner)).setText("loading");
-	}
-
-	public void displayRemoveBuffering() {
-		((TextView)findViewById(R.id.banner)).setText("go");
-        showButtonStop();
 	}
 
     private void adaptMenuButtonToState() {
@@ -247,8 +268,4 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
     private void showButtonPlay() {
         showMenuButtonAs(R.id.menu_play, R.drawable.ic_play);
     }
-
-	public void displayStoppedBuffering() {
-		((TextView)findViewById(R.id.banner)).setText("stop");
-	}
 }
