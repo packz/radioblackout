@@ -114,19 +114,11 @@ public class RadioService  extends Service implements MediaPlayer.OnPreparedList
 
 		PendingIntent pi = PendingIntent.getActivity(this, 0, i, 0);
 
-		if (true) {
-			RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.notification_layout);
-			contentView.setImageViewResource(R.id.image, R.drawable.radio);
-			contentView.setTextViewText(R.id.title, "Custom notification");
-			note.contentView = contentView;
-			note.contentIntent = pi;
-		} else {
-			note.setLatestEventInfo(
-					this,
-					"Fake Player",
-					"Radio Blackout 105.250",
-					pi);
-		}
+        RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.notification_layout);
+        contentView.setTextViewText(R.id.title, "Radio Blackout 105.25 FM");
+        contentView.setImageViewResource(R.id.image, R.drawable.radio);
+        note.contentView = contentView;
+        note.contentIntent = pi;
 		note.flags |= Notification.FLAG_NO_CLEAR;
 
 		Log.i(TAG, "start foreground service");
