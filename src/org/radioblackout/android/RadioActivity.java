@@ -52,6 +52,8 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 
 	static MediaPlayer MP = null;
 
+    private RSSFeed mFeed = null;
+
     private RadioServiceReceiver mRadioServiceReceiver;
 
 	@Override
@@ -159,9 +161,8 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 			public void run() {
 				RSSReader reader = new RSSReader();
 
-				RSSFeed feed = null;
 				try {
-					feed = reader.load("http://radioblackout.org/feed/");
+					mFeed = reader.load("http://radioblackout.org/feed/");
 				} catch(Exception e) {
 					//Log.e(TAG, e.getMessage());
 
@@ -171,7 +172,7 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 				final RadioRSSAdapter rssAdapter =
 					new RadioRSSAdapter(
 							RadioActivity.this,
-							(feed == null ? new ArrayList<RSSItem>() : feed.getItems())
+							(mFeed == null ? new ArrayList<RSSItem>() : mFeed.getItems())
 						);
 
 				final ListView lv = (ListView)findViewById(R.id.rss_list);
@@ -200,6 +201,10 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 			// could not get audio focus.
 			android.util.Log.i("TAG", "no focus baby");
 		}*/
+        // don't reload if there are feed
+		if (mFeed == null)
+            t.start();
+	}
     @Override
     public void onResume() {
         IntentFilter radioServiceStatusIntentFilter =
