@@ -23,6 +23,8 @@ import android.widget.*;
  *
  * TODO: use a secondary thread to control playback status like https://gist.github.com/916157
  * but using getCurrentPosition()
+ *
+ * FIXME: maybe saving in mContext the calling instance cause a memory leak.
  */
 public class RadioService  extends Service implements MediaPlayer.OnPreparedListener {
 	private static final String TAG = "RadioService";
@@ -31,6 +33,13 @@ public class RadioService  extends Service implements MediaPlayer.OnPreparedList
 	private static Context mContext;
 
 	private static final String ACTION_STOP = "com.example.action.STOP";
+	private static final String ACTION_STATUS = "com.example.action.STATUS";
+
+    public static final int RB_STREAM_STATUS_STOPPED = 0;
+    public static final int RB_STREAM_STATUS_LOADING = 1;
+    public static final int RB_STREAM_STATUS_STARTED = 2;
+    private static int RB_STREAM_STATUS = 0;
+
 	MediaPlayer mMediaPlayer = null;
 
 	Notification mNote = null;
@@ -46,7 +55,6 @@ public class RadioService  extends Service implements MediaPlayer.OnPreparedList
 	public IBinder onBind(Intent intent) {
 		return null;
 	}
-
 
 	private void initMediaPlayer() {
 		if (mMediaPlayer == null)
@@ -127,24 +135,28 @@ public class RadioService  extends Service implements MediaPlayer.OnPreparedList
 		// if asked for PLAY and the media player doesn't exist or not playing, play it!!!
 		// FIXME: if is asked during buffering?
 		if (action.equals(ACTION_PLAY) && (mMediaPlayer == null || !mMediaPlayer.isPlaying())) {
+            RB_STREAM_STATUS = RB_STREAM_STATUS_LOADING;
 			// FIXME: create an interface
 			((RadioActivity)mContext).displayBuffering();
 			initMediaPlayer();
 		} else if(action.equals(ACTION_STOP)) {
+            RB_STREAM_STATUS = RB_STREAM_STATUS_STOPPED;
 			mMediaPlayer.stop();
+            mMediaPlayer.reset();
 			mMediaPlayer = null;
 
 			// remove the notification
 			stopForeground(true);
 			((RadioActivity)mContext).displayStoppedBuffering();
-		}
+        }
 
-		return START_STICKY;
+		return START_NOT_STICKY;
 	}
 
 	/** Called when MediaPlayer is ready */
 	public void onPrepared(MediaPlayer player) {
 		player.start();
+        RB_STREAM_STATUS = RB_STREAM_STATUS_STARTED;
 		createNotificationStatus();
 		((RadioActivity)mContext).displayRemoveBuffering();
 	}
@@ -172,5 +184,9 @@ public class RadioService  extends Service implements MediaPlayer.OnPreparedList
 		i.setAction(ACTION_STOP);
 		caller.startService(i);
 	}
+
+    static public int getStatus() {
+        return RB_STREAM_STATUS;
+    }
 
 }
