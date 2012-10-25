@@ -8,6 +8,7 @@ PREREQUISITES
 
   - Ant                         <http://ant.apache.org/>
   - Android SDK (Level8 API)    <http://developer.android.com>
+  - ActionBarSherlock           <http://actionbarsherlock.com/>
 
 Set the sdk path into the 'local.properties' file by the sdk.dir properties; e.g.
 

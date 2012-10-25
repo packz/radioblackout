@@ -1,5 +1,10 @@
 package org.radioblackout.android;
 
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.view.MenuInflater;
 import android.app.Activity;
 import android.os.Bundle;
 import android.media.*;
@@ -24,7 +29,7 @@ import java.io.IOException;
  * TODO: alert the user if is connected by mobile network.
  * TODO: use wake locks
  */
-public class RadioActivity extends Activity implements AudioManager.OnAudioFocusChangeListener {
+public class RadioActivity extends SherlockActivity implements AudioManager.OnAudioFocusChangeListener {
 	private static final String TAG = "RadioActivity";
 	private static String URL = "http://stream.radioblackout.org/blackout-low.mp3";
 
@@ -34,6 +39,12 @@ public class RadioActivity extends Activity implements AudioManager.OnAudioFocus
 
 	static MediaPlayer MP = null;
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater menuInflater = getSupportMenuInflater();
+		menuInflater.inflate(R.menu.main, menu);
+
+	}
 	/*
 	 * Simply paste-copied from http://developer.android.com/guide/topics/media/mediaplayer.html
 	 */
@@ -136,11 +147,19 @@ public class RadioActivity extends Activity implements AudioManager.OnAudioFocus
 		//RadioService.start(this);
 
 		mState = STATE_STOPPED;
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.menu_play:
+				startStopStream(null);
+				break;
+		}
+		return super.onOptionsItemSelected(item);
 
 		checkNetworkStatus();
 	}
 
-	public void stopStream(View view) {
+	public void startStopStream(View view) {
 		switch(mState) {
 			case STATE_PLAYING:
 				RadioService.stop(this);
