@@ -5,6 +5,7 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuInflater;
+import android.view.View;
 import android.app.Activity;
 import android.os.Bundle;
 import android.media.*;
@@ -19,7 +20,10 @@ import android.view.*;
 import android.net.*;
 import android.telephony.*;
 
+import org.mcsoxford.rss.*;
+
 import java.io.IOException;
+import java.util.*;
 
 
 /**
@@ -132,6 +136,41 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 		//showDialog(0);
 		setContentView(R.layout.radio);
 
+		//FIXME: use loaders <http://developer.android.com/guide/topics/fundamentals/loaders.html>
+		Thread t = new Thread() {
+			public void run() {
+				RSSReader reader = new RSSReader();
+
+				RSSFeed feed = null;
+				try {
+					feed = reader.load("http://radioblackout.org/feed/");
+				} catch(Exception e) {
+					//Log.e(TAG, e.getMessage());
+
+					e.printStackTrace();
+				}
+
+				final RadioRSSAdapter rssAdapter =
+					new RadioRSSAdapter(
+							RadioActivity.this,
+							(feed == null ? new ArrayList<RSSItem>() : feed.getItems())
+						);
+
+				final ListView lv = (ListView)findViewById(R.id.rss_list);
+				lv.post(new Runnable(){
+					public void run() {
+						lv.setAdapter(rssAdapter);
+						lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+							public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+								RSSItem item = (RSSItem)parent.getItemAtPosition(position);
+								Intent browserIntent = new Intent(Intent.ACTION_VIEW, item.getLink());
+								startActivity(browserIntent);
+							}
+						});
+					}
+				});
+			}
+		};
 		/*
 		AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		int result = audioManager.requestAudioFocus(
@@ -144,7 +183,7 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 			android.util.Log.i("TAG", "no focus baby");
 		}*/
 
-		//RadioService.start(this);
+		t.start();
 
 		mState = STATE_STOPPED;
 	@Override
