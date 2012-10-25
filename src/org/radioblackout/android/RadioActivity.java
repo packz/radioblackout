@@ -37,9 +37,6 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 	private static final String TAG = "RadioActivity";
 	private static String URL = "http://stream.radioblackout.org/blackout-low.mp3";
 
-	static private final int STATE_STOPPED = 0;
-	static private final int STATE_PLAYING = 1;
-	static private int mState;
 
 	static MediaPlayer MP = null;
 
@@ -185,7 +182,6 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 
 		t.start();
 
-		mState = STATE_STOPPED;
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -199,16 +195,15 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 	}
 
 	public void startStopStream(View view) {
-		switch(mState) {
-			case STATE_PLAYING:
+		switch(RadioService.getStatus()) {
+			case RadioService.RB_STREAM_STATUS_STARTED:
 				RadioService.stop(this);
 				break;
-			case STATE_STOPPED:
+			case RadioService.RB_STREAM_STATUS_STOPPED:
 				RadioService.start(this);
 				break;
 		}
 
-		mState = mState == 0 ? 1 : 0;
 	}
 
 	private void setBannerMessage(String msg) {
