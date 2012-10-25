@@ -37,6 +37,7 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 	private static final String TAG = "RadioActivity";
 	private static String URL = "http://stream.radioblackout.org/blackout-low.mp3";
 
+    private Menu mMenu = null;
 
 	static MediaPlayer MP = null;
 
@@ -45,7 +46,14 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 		MenuInflater menuInflater = getSupportMenuInflater();
 		menuInflater.inflate(R.menu.main, menu);
 
+        mMenu = menu;
+
+        adaptMenuButtonToState();
+		// Calling super after populating the menu is necessary here to ensure that the
+		// action bar helpers have a chance to handle this event.
+		return super.onCreateOptionsMenu(menu);
 	}
+
 	/*
 	 * Simply paste-copied from http://developer.android.com/guide/topics/media/mediaplayer.html
 	 */
@@ -203,6 +211,7 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 				RadioService.start(this);
 				break;
 		}
+        adaptMenuButtonToState();
 
 	}
 
@@ -216,7 +225,28 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 
 	public void displayRemoveBuffering() {
 		((TextView)findViewById(R.id.banner)).setText("go");
+        showButtonStop();
 	}
+
+    private void adaptMenuButtonToState() {
+        if (RadioService.getStatus() == RadioService.RB_STREAM_STATUS_STARTED)
+            showButtonStop();
+        else
+            showButtonPlay();
+    }
+
+    private void showMenuButtonAs(int item_id, int resource) {
+        MenuItem mi = mMenu.findItem(item_id);
+        mi.setIcon(resource);
+    }
+
+    private void showButtonStop() {
+        showMenuButtonAs(R.id.menu_play, R.drawable.ic_pause);
+    }
+
+    private void showButtonPlay() {
+        showMenuButtonAs(R.id.menu_play, R.drawable.ic_play);
+    }
 
 	public void displayStoppedBuffering() {
 		((TextView)findViewById(R.id.banner)).setText("stop");
