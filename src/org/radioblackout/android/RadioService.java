@@ -103,7 +103,7 @@ public class RadioService  extends Service implements MediaPlayer.OnPreparedList
 	private void createNotificationStatus() {
 		// TODO: remove useless reinstanciation
 		Notification note =
-			new Notification(R.drawable.icon,
+			new Notification(R.drawable.ic_radio_notification,
 				"Can you hear the music?",
 				System.currentTimeMillis());
 
