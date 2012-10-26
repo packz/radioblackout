@@ -19,6 +19,9 @@ import android.content.*;
 import android.view.*;
 import android.net.*;
 import android.telephony.*;
+import android.graphics.drawable.AnimationDrawable;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
 
 import org.mcsoxford.rss.*;
 
@@ -255,15 +258,23 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 	}
 
     private void adaptMenuButtonToState() {
-        if (RadioService.getStatus() == RadioService.RB_STREAM_STATUS_STARTED)
+        int status = RadioService.getStatus();
+        if (status == RadioService.RB_STREAM_STATUS_STARTED) {
+            Log.i(TAG, "STARTED");
             showButtonStop();
-        else
+        } else if (status == RadioService.RB_STREAM_STATUS_STOPPED) {
+            Log.i(TAG, "STOPPED");
             showButtonPlay();
+        } else {
+            showButtonLoading();
+        }
     }
 
-    private void showMenuButtonAs(int item_id, int resource) {
+    private MenuItem showMenuButtonAs(int item_id, int resource) {
         MenuItem mi = mMenu.findItem(item_id);
         mi.setIcon(resource);
+
+        return mi;
     }
 
     private void showButtonStop() {
@@ -272,5 +283,15 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 
     private void showButtonPlay() {
         showMenuButtonAs(R.id.menu_play, R.drawable.ic_play);
+    }
+
+    private void showButtonLoading() {
+        MenuItem mi = showMenuButtonAs(R.id.menu_play, R.drawable.ic_refresh_animation);
+
+        AnimationDrawable iconAnimation =
+            (AnimationDrawable)mi.getIcon();
+
+        iconAnimation.start();
+        Log.i(TAG, "animation is running: " + iconAnimation.isRunning());
     }
 }
