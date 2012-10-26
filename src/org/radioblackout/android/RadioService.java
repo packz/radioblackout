@@ -134,6 +134,7 @@ public class RadioService  extends Service implements MediaPlayer.OnPreparedList
 		// FIXME: if is asked during buffering?
 		if (action.equals(ACTION_PLAY) && (mMediaPlayer == null || !mMediaPlayer.isPlaying())) {
             RB_STREAM_STATUS = RB_STREAM_STATUS_LOADING;
+            announceStatusChange();
 			initMediaPlayer();
 		} else if(action.equals(ACTION_STOP)) {
             RB_STREAM_STATUS = RB_STREAM_STATUS_STOPPED;
