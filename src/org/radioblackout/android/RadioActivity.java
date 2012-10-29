@@ -6,6 +6,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuInflater;
 import android.view.View;
+import android.widget.RelativeLayout;
 import android.app.Activity;
 import android.os.Bundle;
 import android.media.*;
@@ -159,6 +160,49 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 		//showDialog(0);
 		setContentView(R.layout.radio);
 
+        final ListView lv = (ListView)findViewById(R.id.rss_list);
+        final RadioRSSAdapter rssAdapter =
+            new RadioRSSAdapter(
+                    RadioActivity.this,
+                    (mFeed == null ? new ArrayList<RSSItem>() : mFeed.getItems())
+                );
+        lv.setAdapter(rssAdapter);
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                RSSItem item = (RSSItem)parent.getItemAtPosition(position);
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, item.getLink());
+                startActivity(browserIntent);
+            }
+        });
+
+        /*
+         * Here we inflate the empty view.
+         *
+         * We have to set the RelativeLayout parameters by hand since otherwise
+         * the XML parameters are not used because it's inflated with null as parent.
+         *
+         * However, also not using null for no reason, when the list contains data
+         * the empty view hide the real content.
+         */
+        LayoutInflater li = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        final View emptyView = li.inflate(R.layout.empty, null);
+        // if not added to the parent it's not shown
+        ((ViewGroup)lv.getParent()).addView(emptyView);
+
+        // Set programmatically the layout parameters otherwise
+        // they will be not calculated if inside XML
+        RelativeLayout.LayoutParams rlp = (RelativeLayout.LayoutParams)emptyView.getLayoutParams();
+        rlp.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+        emptyView.setLayoutParams(rlp);
+
+        // retrieve the image with the animation
+        ImageView iv = (ImageView)emptyView.findViewById(R.id.empty_list_image);
+
+        // start the animation
+        AnimationDrawable frameAnimation = (AnimationDrawable)iv.getDrawable();
+        frameAnimation.start();
+
+        lv.setEmptyView(emptyView);
 		//FIXME: use loaders <http://developer.android.com/guide/topics/fundamentals/loaders.html>
 		Thread t = new Thread() {
 			public void run() {
@@ -172,25 +216,6 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 					e.printStackTrace();
 				}
 
-				final RadioRSSAdapter rssAdapter =
-					new RadioRSSAdapter(
-							RadioActivity.this,
-							(mFeed == null ? new ArrayList<RSSItem>() : mFeed.getItems())
-						);
-
-				final ListView lv = (ListView)findViewById(R.id.rss_list);
-				lv.post(new Runnable(){
-					public void run() {
-						lv.setAdapter(rssAdapter);
-						lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-							public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-								RSSItem item = (RSSItem)parent.getItemAtPosition(position);
-								Intent browserIntent = new Intent(Intent.ACTION_VIEW, item.getLink());
-								startActivity(browserIntent);
-							}
-						});
-					}
-				});
 			}
 		};
 
