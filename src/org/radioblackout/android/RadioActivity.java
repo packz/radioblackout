@@ -26,6 +26,9 @@ import android.view.ViewGroup;
 
 import org.mcsoxford.rss.*;
 
+import de.neofonie.mobile.app.android.widget.crouton.Crouton;
+import de.neofonie.mobile.app.android.widget.crouton.Style;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -118,7 +121,7 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 	private final int NETWORK_MOBILE = 1;
 	private final int NETWORK_WIFI = 2;
 
-	private void checkNetworkStatus() {
+	private int checkNetworkStatus() {
 		ConnectivityManager cm =
 			(ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
 
@@ -129,7 +132,7 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 
 		boolean isAvailable = activeNetwork == null ? false : activeNetwork.isAvailable();
 
-		int type;
+		int type = NETWORK_UNAVAILABLE;
 
 		if (!isAvailable)
 			return NETWORK_UNAVAILABLE;
@@ -142,10 +145,9 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 			default: break;
 		}
 
-		Log.i(TAG, "Connectivity - availability: " + isAvailable + " type: " + type);
-
 		return type;
 	}
+
 
 	/*
 	 * Seems that direct URL streaming doesn't work so following this mail thread
@@ -203,19 +205,47 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
         frameAnimation.start();
 
         lv.setEmptyView(emptyView);
+
+		if (checkNetworkStatus() == NETWORK_UNAVAILABLE) {
+            Crouton.showText(
+                    this, 
+                    "No network, no party", 
+                    Style.ALERT);
+
+            return;
+        }
+
 		//FIXME: use loaders <http://developer.android.com/guide/topics/fundamentals/loaders.html>
 		Thread t = new Thread() {
 			public void run() {
+                boolean isOk = true;
 				RSSReader reader = new RSSReader();
 
 				try {
 					mFeed = reader.load("http://radioblackout.org/feed/");
 				} catch(Exception e) {
-					//Log.e(TAG, e.getMessage());
+					Crouton.showText(
+                        RadioActivity.this,
+                        "Problemi nel recupero dei feed",
+                        Style.ALERT);
 
 					e.printStackTrace();
+
+                    isOk = false;
 				}
 
+
+                /*
+                 * Remove and then add all the items.
+                 */
+                if (isOk) {
+                    lv.post(new Runnable(){
+                        public void run() {
+                            rssAdapter.clear();
+                            rssAdapter.addAll(mFeed.getItems());
+                        }
+                    });
+                }
 			}
 		};
 
@@ -223,6 +253,7 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 		if (mFeed == null)
             t.start();
 	}
+
     @Override
     public void onResume() {
         IntentFilter radioServiceStatusIntentFilter =
@@ -249,8 +280,6 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 				break;
 		}
 		return super.onOptionsItemSelected(item);
-
-		checkNetworkStatus();
 	}
 
 	public void startStopStream(View view) {
