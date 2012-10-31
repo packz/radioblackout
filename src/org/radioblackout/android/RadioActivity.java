@@ -42,6 +42,7 @@ import java.util.*;
 public class RadioActivity extends SherlockActivity implements AudioManager.OnAudioFocusChangeListener {
 	private static final String TAG = "RadioActivity";
 	private static String URL = "http://stream.radioblackout.org/blackout-low.mp3";
+    private ListView mListView = null;
 
     /*
      * This class listen for change in the status of the RadioService and update
@@ -147,28 +148,9 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 		return type;
 	}
 
-
-	/*
-	 * Seems that direct URL streaming doesn't work so following this mail thread
-	 *
-	 * 	http://markmail.org/message/tkymyawq7gwfdvl3
-	 *
-	 * we download the file locally and then play it.
-	 */
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		//showDialog(0);
-		setContentView(R.layout.radio);
-
-        final ListView lv = (ListView)findViewById(R.id.rss_list);
-        final RadioRSSAdapter rssAdapter =
-            new RadioRSSAdapter(
-                    RadioActivity.this,
-                    (mFeed == null ? new ArrayList<RSSItem>() : mFeed.getItems())
-                );
-        lv.setAdapter(rssAdapter);
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+    private void setupAdapter() {
+        mListView = (ListView)findViewById(R.id.rss_list);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 RSSItem item = (RSSItem)parent.getItemAtPosition(position);
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, item.getLink());
@@ -188,7 +170,7 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
         LayoutInflater li = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         final View emptyView = li.inflate(R.layout.empty, null);
         // if not added to the parent it's not shown
-        ((ViewGroup)lv.getParent()).addView(emptyView);
+        ((ViewGroup)mListView.getParent()).addView(emptyView);
 
         // Set programmatically the layout parameters otherwise
         // they will be not calculated if inside XML
@@ -200,10 +182,46 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
         ImageView iv = (ImageView)emptyView.findViewById(R.id.empty_list_image);
 
         // start the animation
-        AnimationDrawable frameAnimation = (AnimationDrawable)iv.getDrawable();
-        frameAnimation.start();
+        final AnimationDrawable frameAnimation = (AnimationDrawable)iv.getDrawable();
+        /*
+         * The following is needed in order to make the animation works
+         *
+         * source: http://digitaldumptruck.jotabout.com/?p=813
+         */
+        mListView.post(new Runnable() {
+            public void run() {
+                frameAnimation.start();
+            }
+        });
 
-        lv.setEmptyView(emptyView);
+        mListView.setEmptyView(emptyView);
+    }
+
+    private void updateAdapter() {
+        RadioRSSAdapter rssAdapter =
+            new RadioRSSAdapter(
+                    RadioActivity.this,
+                    (mFeed == null ? new ArrayList<RSSItem>() : mFeed.getItems())
+                );
+        mListView.setAdapter(rssAdapter);
+    }
+
+
+	/*
+	 * Seems that direct URL streaming doesn't work so following this mail thread
+	 *
+	 * 	http://markmail.org/message/tkymyawq7gwfdvl3
+	 *
+	 * we download the file locally and then play it.
+	 */
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.radio);
+
+        setupAdapter();
+
+        updateAdapter();
 
 		if (checkNetworkStatus() == NETWORK_UNAVAILABLE) {
             Crouton.showText(
@@ -238,10 +256,9 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
                  * Remove and then add all the items.
                  */
                 if (isOk) {
-                    lv.post(new Runnable(){
+                    mListView.post(new Runnable(){
                         public void run() {
-                            rssAdapter.clear();
-                            rssAdapter.addAll(mFeed.getItems());
+                            updateAdapter();
                         }
                     });
                 }
@@ -324,9 +341,15 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
     private void showButtonLoading() {
         MenuItem mi = showMenuButtonAs(R.id.menu_play, R.drawable.ic_refresh_animation);
 
-        AnimationDrawable iconAnimation =
+        final AnimationDrawable iconAnimation =
             (AnimationDrawable)mi.getIcon();
 
-        iconAnimation.start();
+        // see comment about empty view's animation
+        // FIXME: doesn't seem to work, maybe problem with ActionBarSherlock
+        mListView.post(new Runnable() {
+            public void run() {
+                iconAnimation.start();
+            }
+        });
     }
 }
