@@ -17,7 +17,6 @@ import android.os.AsyncTask;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.*;
-import android.view.*;
 import android.net.*;
 import android.telephony.*;
 import android.graphics.drawable.AnimationDrawable;
@@ -294,13 +293,6 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
         adaptMenuButtonToState();
 	}
 
-	private void setBannerMessage(String msg) {
-		((TextView)findViewById(R.id.banner)).setText(msg);
-	}
-
-	public void displayBuffering() {
-	}
-
     private void adaptMenuButtonToState() {
         int status = RadioService.getStatus();
         if (status == RadioService.RB_STREAM_STATUS_STARTED) {
@@ -336,6 +328,5 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
             (AnimationDrawable)mi.getIcon();
 
         iconAnimation.start();
-        Log.i(TAG, "animation is running: " + iconAnimation.isRunning());
     }
 }
