@@ -1,7 +1,12 @@
-This project contains a test application for android platform.
+This application visualize feeds from the official site of Radio Blackout,
+an autonomous radio located in Turin, Italy.
 
-The icons are downloaded from <http://www.openclipart.org>.
+It is also possible to listen using the streaming, clicking on the play
+button in the action bar.
 
+For more related info about the radio look at the site
+
+  http://www.radioblackout.org
 
 PREREQUISITES
 -------------
@@ -9,6 +14,7 @@ PREREQUISITES
   - Ant                         <http://ant.apache.org/>
   - Android SDK (Level8 API)    <http://developer.android.com>
   - ActionBarSherlock           <http://actionbarsherlock.com/>
+  - Crouton                     <https://github.com/keyboardsurfer/Crouton>
 
 Set the sdk path into the 'local.properties' file by the sdk.dir properties; e.g.
 
@@ -26,20 +32,11 @@ The steps to compile and install this application are
 
   2 - use the Ant script
 
-      $ ant install
+      $ ant debug install
 
 If you want to install into a device (connected by USB cable) use the adb tool
 with the following command
 
-  $ adb -d install bin/android_test-debug.apk
+  $ adb -d install bin/RadioBlackout-debug.apk
 
 For more information look at the original android documentation.
-
-
-RESOURCES
----------
-
-The res/raw/music.mp3 audio file is "Cases of Misused Apostrophe's" by go1dfish,
-it's licensed with a Attribution 2.5 Generic Creative Common license.
-
-For more info look at <http://ccmixter.org/files/go1dfish/29125>.
