@@ -239,7 +239,7 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
 				RSSReader reader = new RSSReader();
 
 				try {
-					mFeed = reader.load(R.string.radio_feed_url);
+					mFeed = reader.load(getApplicationContext().getResources().getString(R.string.radio_feed_url));
 				} catch(Exception e) {
 					Crouton.showText(
                         RadioActivity.this,
