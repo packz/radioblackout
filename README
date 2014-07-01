@@ -8,35 +8,21 @@ For more related info about the radio look at the site
 
   http://www.radioblackout.org
 
-PREREQUISITES
--------------
+CCOMPILING
+----------
 
-  - Ant                         <http://ant.apache.org/>
+The dependencies are
+
   - Android SDK (Level8 API)    <http://developer.android.com>
   - ActionBarSherlock           <http://actionbarsherlock.com/>
   - Crouton                     <https://github.com/keyboardsurfer/Crouton>
+  - Android RSS                 <https://github.com/ahorn/android-rss> included inside the project
 
-Set the sdk path into the 'local.properties' file by the sdk.dir properties; e.g.
+The app uses the gradle build system and is updated to work with Android Studio (v0.8.1) but it's
+possible to compile the app from command line using
 
-  sdk.dir=/opt/android-sdk-linux_86
+    $ ./gradlew build
 
+and install the application with
 
-COMPILATION
------------
-
-The steps to compile and install this application are
-
-  1 - start an Android Virtual Device (AVD)
-
-      $ android &
-
-  2 - use the Ant script
-
-      $ ant debug install
-
-If you want to install into a device (connected by USB cable) use the adb tool
-with the following command
-
-  $ adb -d install bin/RadioBlackout-debug.apk
-
-For more information look at the original android documentation.
+    $ adb -d install -r ./app/build/outputs/apk/app-debug.apk
