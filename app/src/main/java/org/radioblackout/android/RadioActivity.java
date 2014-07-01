@@ -323,9 +323,11 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
         }
     }
 
+    // static menu item configuration (i.e. no animation)
     private MenuItem showMenuButtonAs(int item_id, int resource) {
         MenuItem mi = mMenu.findItem(item_id);
         mi.setIcon(resource);
+        mi.setActionView(null);
 
         return mi;
     }
@@ -338,18 +340,9 @@ public class RadioActivity extends SherlockActivity implements AudioManager.OnAu
         showMenuButtonAs(R.id.menu_play, R.drawable.ic_play);
     }
 
+    // http://www.michenux.net/android-refresh-item-action-bar-circular-progressbar-578.html
     private void showButtonLoading() {
-        MenuItem mi = showMenuButtonAs(R.id.menu_play, R.drawable.ic_refresh_animation);
-
-        final AnimationDrawable iconAnimation =
-            (AnimationDrawable)mi.getIcon();
-
-        // see comment about empty view's animation
-        // FIXME: doesn't seem to work, maybe problem with ActionBarSherlock
-        mListView.post(new Runnable() {
-            public void run() {
-                iconAnimation.start();
-            }
-        });
+        MenuItem mi = mMenu.findItem(R.id.menu_play);
+        mi.setActionView(R.layout.action_bar_indeterminate_progress);
     }
 }
