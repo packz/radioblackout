@@ -1,4 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
@@ -6,6 +7,7 @@
     <TextView android:id="@+id/item_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        tools:text="25/06/2014"
         />
     <TextView android:id="@+id/item_title"
         android:textAppearance="?android:attr/textAppearanceMedium"
@@ -13,6 +15,7 @@
         android:layout_height="wrap_content"
         android:paddingBottom="10dp"
         android:textStyle="bold"
+        tools:text="Titolo molto emozionante"
         />
     <TextView android:id="@+id/item_category"
         android:layout_width="wrap_content"
@@ -21,5 +24,6 @@
         android:paddingLeft="10dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textStyle="italic"
+        tools:text="Contenuto del sommario all'articolo"
         />
 </LinearLayout>
